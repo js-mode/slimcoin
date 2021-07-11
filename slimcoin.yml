@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: slimcoin
+  labels:
+    app: slimcoin
+spec:
+  ports:
+  - port: 9332
+    name: litecoin
+  clusterIP: None
+  selector:
+    app: slimcoin
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: slimcoin
+spec:
+  serviceName: "slimcoin"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: slimcoin
+  template:
+    metadata:
+      labels:
+        app: slimcoin
+    spec:
+      containers:
+      - name: slimcoin
+        image: slimcoin/slimcoin:005
+        ports:
+        - containerPort: 9332
+          name: litecoin
+        volumeMounts:
+        - name: litecoin
+          mountPath: /home/litecoin/.litecoin
+  volumeClaimTemplates:
+  - metadata:
+      name: litecoin
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      resources:
+        requests:
+          storage: 1Gi
